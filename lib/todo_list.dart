@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:radency_hometask1/plain_to_do.dart';
 
 enum DayOfTheWeek {
   Monday,
@@ -10,102 +11,84 @@ enum DayOfTheWeek {
   Sunday
 }
 
-abstract class Task {
-  var name;
-  var id;
-  var category;
-}
-
-class PlainToDo implements Task {
-  @override
-  var name;
-  @override
-  var id;
-  @override
-  var category;
-
-  PlainToDo({
-    required this.id,
-    required this.name,
-    required this.category,
-  });
-}
-
 class ToDoList {
-  var listMain = <Map>[];
+  final taskList = <Map>[];
 
   void addTask() {
-    print('Type id, name, categoty by Enter');
-    var ins = PlainToDo(
+    print('\n Type ID, Name, Category by Enter');
+    final instanceOfTask = PlainToDo(
         id: stdin.readLineSync(),
         name: stdin.readLineSync(),
         category: stdin.readLineSync());
 
-    final map = <String, dynamic>{
-      'id': ins.id,
-      'name': ins.name,
-      'category': ins.category,
+    final mapOfTask = <String, dynamic>{
+      'id': instanceOfTask.id,
+      'name': instanceOfTask.name,
+      'category': instanceOfTask.category,
     };
 
-    print('Is Task is Reccuring? \n 1. Yes \n 2. No');
-    var isReccuring = stdin.readLineSync();
-    if (isReccuring == '1') {
+    print('\n Is task is recurring? \n 1. Yes \n 2. No');
+    final isTaskRecurring = stdin.readLineSync();
+    if (isTaskRecurring == '1') {
       print(
-          'Type day: \n 1. Monday \t 2. Tuesday \n 3. Wednesday \t 4. Thusday \n 5. Friday \t 6. Saturday \n 7. Sunday');
-      final day = int.parse(stdin.readLineSync()!) - 1;
-      for (var i in DayOfTheWeek.values) {
-        if (day == i.index) {
-          map['day'] = i.toString().split('.').last;
+          '\n Type a day: \n 1. Monday \t 2. Tuesday \n 3. Wednesday \t 4. Thusday \n 5. Friday \t 6. Saturday \n 7. Sunday');
+      final dayOfTheWeek = int.parse(stdin.readLineSync()!) - 1;
+      for (var day in DayOfTheWeek.values) {
+        if (dayOfTheWeek == day.index) {
+          mapOfTask['day'] = day.toString().split('.').last;
         }
       }
     }
-    listMain.add(map);
+    taskList.add(mapOfTask);
   }
 
-  Map<String, List<Map>> groupBy(String Function(Map) key) {
-    var groupMap = <String, List<Map>>{};
-    for (var element in listMain) {
-      (groupMap[key(element)] ??= []).add(element);
+  static void deleteTask({required taskList}) {
+    print('\n Type ID to delete');
+    final deletedId = stdin.readLineSync();
+    taskList.removeWhere((task) => task['id'] == deletedId);
+  }
+
+  Map<S, List<Map>> groupByCategory<S>(S Function(Map) key) {
+    var groupedMap = <S, List<Map>>{};
+    for (var task in taskList) {
+      (groupedMap[key(task)] ??= []).add(task);
     }
-    return groupMap;
+    return groupedMap;
   }
 
   void showTask() {
-    ;
-    var newMap = groupBy((item) => item['category']).map((k, v) => MapEntry(
-        k,
-        v.map((item) {
-          item.remove('category');
-          return item;
-        }).toList()));
-    print(newMap);
+    var groupedMap = groupByCategory((item) => item['category']);
+    groupedMap.keys.forEach((key) {
+      var tasksInCategory = groupedMap[key];
+      var numberOfTasks = tasksInCategory!.length;
+      print('Category: $key | Number: $numberOfTasks | \n Tasks:');
+      for (var task in tasksInCategory) {
+        var day = task['day'] ?? '';
+        print('ID: ${task['id']} | Task: ${task['name']} | Day: $day');
+      }
+    });
   }
 
   void addFewElements() {}
 
-  void deleteTask() {
-    listMain.removeWhere((item) => item['id'] == stdin.readLineSync());
-  }
-
-  void menu() {
-    var runningApp = true;
-    while (runningApp == true) {
+  void mainMenu() {
+    var appRunning = true;
+    while (appRunning == true) {
       print(
-          'Choose menu: \n 1. Add task \t 2. Delete task \n 3. Show tasks \t 4. Exit');
+          '\n Choose menu: \n 1. Add new task \t 2. Delete task \n 3. Show task list \t 4. Exit');
       var choose = stdin.readLineSync();
       switch (choose) {
         case '1':
           addTask();
           break;
         case '2':
-          deleteTask();
+          deleteTask(taskList: taskList);
           break;
         case '3':
-          // sortByCategory('category' , 'id','name', 'day', list);
           showTask();
           break;
         case '4':
-          runningApp = false;
+          appRunning = false;
           break;
 
         default:
