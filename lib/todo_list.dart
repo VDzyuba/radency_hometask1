@@ -1,106 +1,97 @@
 import 'dart:io';
 
-enum dayOfTheWeek {
+enum DayOfTheWeek {
   Monday,
   Tuesday,
   Wednesday,
   Thursday,
   Friday,
   Saturday,
-  Sundey
+  Sunday
 }
 
 abstract class Task {
   var name;
   var id;
   var category;
-
-  void addTask();
-
-  void addFewElements();
-
-  void deleteTask();
 }
 
-class ToDoList implements Task {
+class PlainToDo implements Task {
+  @override
+  var name;
+  @override
+  var id;
   @override
   var category;
 
-  @override
-  var id;
+  PlainToDo({
+    required this.id,
+    required this.name,
+    required this.category,
+  });
+}
 
-  @override
-  var name;
+class ToDoList {
+  var listMain = <Map>[];
 
-  final list = [];
-
-  @override
   void addTask() {
-    final map = {};
-    print('id');
-    id = stdin.readLineSync();
-    map['id'] = id;
+    print('Type id, name, categoty by Enter');
+    var ins = PlainToDo(
+        id: stdin.readLineSync(),
+        name: stdin.readLineSync(),
+        category: stdin.readLineSync());
 
-    print('name');
-    name = stdin.readLineSync();
-    map['name'] = name;
+    final map = <String, dynamic>{
+      'id': ins.id,
+      'name': ins.name,
+      'category': ins.category,
+    };
 
-    print('category');
-    category = stdin.readLineSync();
-    map['category'] = category;
-
-    print('This task is recurring: \n 1.Yes \n 2.No');
+    print('Is Task is Reccuring? \n 1. Yes \n 2. No');
     var isReccuring = stdin.readLineSync();
     if (isReccuring == '1') {
       print(
-          'Choose a day: \n 1. Monday \n 2. Tuesday \n 3. Wednesday \n 4. Thursday \n 5. Friday \n 6. Saturday \n 7. Sunday');
-      var day = stdin.readLineSync();
-      switch (day) {
-        case '1':
-          map['day'] = dayOfTheWeek.Monday;
-          break;
-        case '2':
-          map['day'] = dayOfTheWeek.Tuesday;
-          break;
-        case '3':
-          map['day'] = dayOfTheWeek.Wednesday;
-          break;
-        case '4':
-          map['day'] = dayOfTheWeek.Thursday;
-          break;
-        case '5':
-          map['day'] = dayOfTheWeek.Friday;
-          break;
-        case '6':
-          map['day'] = dayOfTheWeek.Saturday;
-          break;
-        case '7':
-          map['day'] = dayOfTheWeek.Sundey;
-          break;
+          'Type day: \n 1. Monday \t 2. Tuesday \n 3. Wednesday \t 4. Thusday \n 5. Friday \t 6. Saturday \n 7. Sunday');
+      final day = int.parse(stdin.readLineSync()!) - 1;
+      for (var i in DayOfTheWeek.values) {
+        if (day == i.index) {
+          map['day'] = i.toString().split('.').last;
+        }
       }
     }
-
-    list.add(map);
+    listMain.add(map);
   }
 
-  static void showTask(list) {
-    print(list);
+  Map<String, List<Map>> groupBy(String Function(Map) key) {
+    var groupMap = <String, List<Map>>{};
+    for (var element in listMain) {
+      (groupMap[key(element)] ??= []).add(element);
+    }
+    return groupMap;
   }
 
-  @override
+  void showTask() {
+    ;
+    var newMap = groupBy((item) => item['category']).map((k, v) => MapEntry(
+        k,
+        v.map((item) {
+          item.remove('category');
+          return item;
+        }).toList()));
+    print(newMap);
+  }
+
   void addFewElements() {}
 
-  @override
   void deleteTask() {
-    list.removeWhere((item) => item['id'] == stdin.readLineSync());
+    listMain.removeWhere((item) => item['id'] == stdin.readLineSync());
   }
 
   void menu() {
     var runningApp = true;
-
     while (runningApp == true) {
       print(
-          'Choose menu \n 1. Add task \n 2. Delete task \n 3. Show tasks \n 4. Exit');
+          'Choose menu: \n 1. Add task \t 2. Delete task \n 3. Show tasks \t 4. Exit');
       var choose = stdin.readLineSync();
       switch (choose) {
         case '1':
@@ -110,7 +101,8 @@ class ToDoList implements Task {
           deleteTask();
           break;
         case '3':
-          showTask(list);
+          // sortByCategory('category' , 'id','name', 'day', list);
+          showTask();
           break;
         case '4':
           runningApp = false;
