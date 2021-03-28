@@ -27,6 +27,27 @@ class ToDoList {
       'category': instanceOfTask.category,
     };
 
+    addDay(mapOfTask);
+
+    if (mapOfTask['id']?.isNotEmpty &&
+        mapOfTask['name']?.isNotEmpty &&
+        mapOfTask['category']?.isNotEmpty) {
+      taskList.add(mapOfTask);
+    } else {
+      print('Cannot create a task. Please, fill all fields');
+    }
+  }
+
+  void addFewTasks() {
+    var isContinue = '1';
+    while (isContinue == '1') {
+      addTask();
+      print('Add another task: \n 1. Yes \t 2. No');
+      isContinue = stdin.readLineSync()!;
+    }
+  }
+
+  void addDay(mapOfTask) {
     print('\n Is task is recurring? \n 1. Yes \n 2. No');
     final isTaskRecurring = stdin.readLineSync();
     if (isTaskRecurring == '1') {
@@ -39,13 +60,16 @@ class ToDoList {
         }
       }
     }
-    taskList.add(mapOfTask);
   }
 
   static void deleteTask({required taskList}) {
-    print('\n Type ID to delete');
-    final deletedId = stdin.readLineSync();
-    taskList.removeWhere((task) => task['id'] == deletedId);
+    if (taskList?.isNotEmpty) {
+      print('\n Type ID to delete');
+      final deletedId = stdin.readLineSync();
+      taskList.removeWhere((task) => task['id'] == deletedId);
+    } else {
+      print('Nothing to delete');
+    }
   }
 
   Map<S, List<Map>> groupByCategory<S>(S Function(Map) key) {
@@ -61,33 +85,37 @@ class ToDoList {
     groupedMap.keys.forEach((key) {
       var tasksInCategory = groupedMap[key];
       var numberOfTasks = tasksInCategory!.length;
-      print('Category: $key | Number: $numberOfTasks | \n Tasks:');
+      print('\n Category: $key | Number of tasks: $numberOfTasks | \n Tasks:');
       for (var task in tasksInCategory) {
         var day = task['day'] ?? '';
         print('ID: ${task['id']} | Task: ${task['name']} | Day: $day');
       }
     });
+    if (taskList.isEmpty) {
+      print('Your task list is empty');
+    }
   }
-
-  void addFewElements() {}
 
   void mainMenu() {
     var appRunning = true;
     while (appRunning == true) {
       print(
-          '\n Choose menu: \n 1. Add new task \t 2. Delete task \n 3. Show task list \t 4. Exit');
+          '\n Choose menu: \n 1. Add new task \t 2. Add few tasks \n 3. Delete task \t 4. Show task list \n 5. Exit');
       var choose = stdin.readLineSync();
       switch (choose) {
         case '1':
           addTask();
           break;
         case '2':
-          deleteTask(taskList: taskList);
+          addFewTasks();
           break;
         case '3':
-          showTask();
+          deleteTask(taskList: taskList);
           break;
         case '4':
+          showTask();
+          break;
+        case '5':
           appRunning = false;
           break;
 
